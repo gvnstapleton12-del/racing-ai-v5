@@ -18,11 +18,13 @@ export default function Home() {
       <h1>V5 Racing AI (Stable Mode)</h1>
 
       {data?.horses?.map((h, i) => (
-        <div key={i} style={{ margin: 10 }}>
-          <h3>{h.name}</h3>
-          <p>{h.decision}</p>
-        </div>
-      ))}
+  <div key={i} style={{ margin: 10, padding: 10, border: "1px solid #ccc" }}>
+    <h3>{h.name}</h3>
+    <p>Odds: {h.odds}</p>
+    <p>Movement: {h.movement}</p>
+    <p>Decision: {h.decision}</p>
+  </div>
+))}
     </div>
   );
 }
