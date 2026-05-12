@@ -1,40 +1,26 @@
-let lastOdds = {
-  "Horse A": 5.0,
-  "Horse B": 3.0,
-  "Horse C": 10.0
-};
+export default async function handler(req, res) {
+  const API_KEY = process.env.ODDS_API_KEY;
 
-function randomMove(odds) {
-  const change = (Math.random() - 0.5) * 0.4;
-  return Math.max(1.1, +(odds + change).toFixed(2));
-}
+  try {
+    const response = await fetch(
+      `https://api.the-odds-api.com/v4/sports/horse_racing/odds/?apiKey=${API_KEY}&regions=uk&markets=win_place`
+    );
 
-export default function handler(req, res) {
-  const horses = ["Horse A", "Horse B", "Horse C"];
+    const data = await response.json();
 
-  const data = horses.map((name) => {
-    const oldOdds = lastOdds[name];
-    const newOdds = randomMove(oldOdds);
+    const horses = (data[0]?.bookmakers?.[0]?.markets?.[0]?.outcomes || []).map(
+      (h) => ({
+        name: h.name,
+        odds: h.price,
+        decision:
+          h.price < 3 ? "WIN" :
+          h.price < 6 ? "EW" : "NO BET"
+      })
+    );
 
-    lastOdds[name] = newOdds;
+    res.status(200).json({ horses });
 
-    const movement =
-      newOdds < oldOdds ? "STEAM 🔥" :
-      newOdds > oldOdds ? "DRIFT 📉" :
-      "STABLE ⚖️";
-
-    let decision = "NO BET";
-
-    if (movement === "STEAM 🔥" && newOdds < 4) decision = "WIN";
-    if (movement === "DRIFT 📉" && newOdds > 6) decision = "EW";
-
-    return {
-      name,
-      odds: newOdds,
-      movement,
-      decision
-    };
-  });
-
-  res.status(200).json({ horses: data });
+  } catch (err) {
+    res.status(500).json({ error: "Odds fetch failed", horses: [] });
+  }
 }
