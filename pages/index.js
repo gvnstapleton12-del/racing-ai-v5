@@ -5,7 +5,7 @@ export default function Home() {
 
   async function loadData() {
     try {
-      const res = await fetch("/api/racecard");
+      const res = await fetch(`/api/racecard?course=${course}`);
       const data = await res.json();
 
       setHorses(data.horses || []);
